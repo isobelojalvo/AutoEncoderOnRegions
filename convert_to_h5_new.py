@@ -13,23 +13,25 @@ def to_np_array(ak_array, maxN=100, num_entries = 576, pad=0):
     print(ak_array)
     output0 = ak.pad_none(ak_array,num_entries,clip=True,axis=0)
     print("pad 0--------")
-    #print(output0)
+    print(output0)
     output1 = ak.pad_none(output0,maxN,clip=True,axis=1)
     print("pad 1--------")
-    #print(output1)
+    print(output1)
     output2 = ak.fill_none(ak.to_list(output1),pad)
     print("pad 2--------")
-    #print(output2)
+    print(output2)
     return ak.to_numpy(output2)
 #    return ak.fill_none(ak.pad_none(ak_array,maxN,clip=True,axis=-1),pad).to_numpy()
 
 def store_objects(arrays, nentries, nobj=10, obj='jet'):
     '''store objects in zero-padded numpy arrays'''
-    l1Obj_cyl = np.zeros((nentries,nobj,3))
-    l1Obj_cart = np.zeros((nentries,nobj,3))
+    l1Obj_cyl = np.zeros((nentries,nobj,5))
+    l1Obj_cart = np.zeros((nentries,nobj,5))
     pt = to_np_array(arrays['{}Et'.format(obj)],maxN=nobj, num_entries=nentries)
     eta = to_np_array(arrays['{}Eta'.format(obj)],maxN=nobj,num_entries=nentries)
     phi = to_np_array(arrays['{}Phi'.format(obj)],maxN=nobj,num_entries=nentries)
+    eg = to_np_array(arrays['{}EG'.format(obj)],maxN=nobj,num_entries=nentries)
+    tau = to_np_array(arrays['{}Tau'.format(obj)],maxN=nobj,num_entries=nentries)
     #print(pt)
     #pt.flatten()
     #print("Flattening--------------------------------------------")
@@ -37,6 +39,8 @@ def store_objects(arrays, nentries, nobj=10, obj='jet'):
     l1Obj_cyl[:,:,0] = pt
     l1Obj_cyl[:,:,1] = eta
     l1Obj_cyl[:,:,2] = phi
+    l1Obj_cyl[:,:,3] = eg
+    l1Obj_cyl[:,:,4] = tau
     l1Obj_cart[:,:,0] = pt*np.cos(phi)
     l1Obj_cart[:,:,1] = pt*np.sin(phi)
     l1Obj_cart[:,:,2] = pt*np.sinh(eta)
@@ -48,9 +52,13 @@ def store_objects(arrays, nentries, nobj=10, obj='jet'):
         l1Obj_cyl[:,:,0] = np.take_along_axis(l1Obj_cyl[:,:,0], sort_indices, axis=1)
         l1Obj_cyl[:,:,1] = np.take_along_axis(l1Obj_cyl[:,:,1], sort_indices, axis=1)
         l1Obj_cyl[:,:,2] = np.take_along_axis(l1Obj_cyl[:,:,2], sort_indices, axis=1)
+        l1Obj_cyl[:,:,3] = np.take_along_axis(l1Obj_cyl[:,:,3], sort_indices, axis=1)
+        l1Obj_cyl[:,:,4] = np.take_along_axis(l1Obj_cyl[:,:,4], sort_indices, axis=1)
         l1Obj_cart[:,:,0] = np.take_along_axis(l1Obj_cart[:,:,0], sort_indices, axis=1)
         l1Obj_cart[:,:,1] = np.take_along_axis(l1Obj_cart[:,:,1], sort_indices, axis=1)
         l1Obj_cart[:,:,2] = np.take_along_axis(l1Obj_cart[:,:,2], sort_indices, axis=1)
+        l1Obj_cart[:,:,3] = np.take_along_axis(l1Obj_cart[:,:,3], sort_indices, axis=1)
+        l1Obj_cart[:,:,4] = np.take_along_axis(l1Obj_cart[:,:,4], sort_indices, axis=1)
     return l1Obj_cyl, l1Obj_cart
 
 def convert_to_h5(input_file, output_file, tree_name):
@@ -69,7 +77,7 @@ def convert_to_h5(input_file, output_file, tree_name):
     njets = 10
     nmuons = 4
     nelectrons = 4
-    nregions = 576
+    nregions = 252
 
     cylNames = [b'pT', b'eta', b'phi']
     cartNames = [b'px', b'py', b'pz']
